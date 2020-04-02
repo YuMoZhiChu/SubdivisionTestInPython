@@ -15,10 +15,38 @@ class Point3(object):
 		self.y = _y
 		self.z = _z
 
+	def __repr__(self):
+		return "Point3 at %#x, (%f, %f, %f)"%(id(self), self.x, self.y, self.z)
+
 	def __eq__(self, other):
 		return self.x == other.x and \
 		self.y == other.y and \
 		self.z == other.z
+
+	def __lt__(self, other):
+		if self.x != other.x:
+			return self.x < other.x
+		if self.y != other.y:
+			return self.y < other.y
+		if self.z != other.z:
+			return self.z < other.z
+		return False
+
+	def __mul__(self, single):
+		return Point3(single * self.x, single * self.y, single * self.z)
+
+	def __rmul__(self, single):
+		return self * single
+
+	def __iadd__(self, other):
+		return Point3(self.x + other.x, self.y + other.y, self.z + other.z)
+
+# a = Point3(0, -1, 2)
+# b = Point3(0, 1, 3)
+# print(min(a, b), max(a,b))
+# print(a*3)
+# a += b
+# print(a)
 
 class SDVertex(object):
 	"""点结构"""
@@ -35,12 +63,18 @@ class SDVertex(object):
 		# 是否是边界点
 		self.boundary = False
 
+	def __repr__(self):
+		return "SDVertex at %#x, (%f, %f, %f)"%(id(self), self.p.x, self.p.y, self.p.z)
+
 	def __eq__(self, other):
 		return self.p == other.p and \
 		self.startFace == other.startFace and \
 		self.child == other.child and \
 		self.regular == other.regular and\
 		self.boundary == other.boundary
+
+	def __lt__(self, other):
+		return Point3.__lt__(self.p, other.p)
 
 	def valence(self) -> int:
 		"""返回顶点价值"""
@@ -91,6 +125,12 @@ class SDVertex(object):
 				f = f.prevFace(self)
 			return result
 
+# a = Point3(0, -1, 2)
+# b = Point3(0, 1, 3)
+# A = SDVertex(a)
+# B = SDVertex(b)
+# print(min(A, B), max(A, B))
+
 class SDFace(object):
 	"""面结构"""
 	def __init__(self):
@@ -121,3 +161,33 @@ class SDFace(object):
 
 	def prevVert(vert:SDVertex):
 		return self.v[PREV(self.vnum(vert))]
+
+class SDEdge(object):
+	"""边结构"""
+	def __init__(self, v0:SDVertex, v1:SDVertex):
+		self.v = [None, None]
+		self.v[0] = min(v0, v1)
+		self.v[1] = max(v0, v1)
+		self.f = [None, None]
+		self.f0edgeNum = -1 # 这条边是三角形的 第几条边
+
+	def __lt__(self, other):
+		if self.v[0] == other.v[0]:
+			return self.v[1] < other.v[1]
+		return self.v[0] < other.v[0]
+
+def weightOneRing(vert:SDVertex, beta:float):
+	valence = vert.valence()
+	result = vert.oneRing()
+	p = vert.p * (1 - valence * beta)
+	for i in range(valence):
+		p += result[i]*beta
+	return p
+
+def weightBoundary(vert:SDVertex, beta:float):
+	valence = vert.valence()
+	result = vert.oneRing()
+	p = vert.p * (1 - 2 * beta)
+	p += beta * result[0]
+	p += beta * result[-1]
+	return p 
