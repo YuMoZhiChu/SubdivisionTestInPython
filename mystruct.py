@@ -141,6 +141,10 @@ class SDFace(object):
 		# 4个子面
 		self.children = [None, None, None, None]
 
+	def __repr__(self):
+		return "\nSDFace at %#x, (%s, %s, %s) \n## f[0] id: %#x, f[1] id: %#x, f[2] id: %#x \n"%\
+		(id(self), self.v[0], self.v[1], self.v[2], id(self.f[0]), id(self.f[1]), id(self.f[2]))
+
 	def vnum(vert:SDVertex) -> int:
 		"""查是第几个顶点"""
 		for i in range(3):
@@ -175,6 +179,9 @@ class SDEdge(object):
 		if self.v[0] == other.v[0]:
 			return self.v[1] < other.v[1]
 		return self.v[0] < other.v[0]
+
+	def __eq__(self, other):
+		return self.v[0] == other.v[0] and self.v[1] == other.v[1]
 
 def weightOneRing(vert:SDVertex, beta:float):
 	valence = vert.valence()
