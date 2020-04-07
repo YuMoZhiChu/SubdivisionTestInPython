@@ -13,8 +13,7 @@ def InitSystem():
 
 def DrawTriList(triList):
 	for tri in triList:
-		g_Ax.add_collection3d(Poly3DCollection(tri, facecolors='cyan', linewidths=2, edgecolors='r', alpha=.25))
-	#g_Ax.scatter(triList, triList, triList)
+		g_Ax.add_collection3d(Poly3DCollection(tri, facecolors='cyan', linewidths=0.5, edgecolors='r', alpha=.25))
 
 def Show(xyzrange):
 	plt.xlim(xyzrange[0])

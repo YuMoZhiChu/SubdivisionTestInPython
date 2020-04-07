@@ -6,7 +6,7 @@
 
 # 上下一个点的简写
 NEXT = lambda i: (i+1)%3
-PREV = lambda i: (i+1)%3
+PREV = lambda i: (i+2)%3
 
 class Point3(object):
 	"""xyz的顶点格式存储"""
@@ -64,7 +64,8 @@ class SDVertex(object):
 		self.boundary = False
 
 	def __repr__(self):
-		return "SDVertex at %#x, (%f, %f, %f)"%(id(self), self.p.x, self.p.y, self.p.z)
+		return "\nSDVertex at %#x, (%f, %f, %f) boundary:%d regular:%d valence:%d\n"%\
+		(id(self), self.p.x, self.p.y, self.p.z, self.boundary, self.regular, self.valence())
 
 	def __eq__(self, other):
 		return self.p == other.p and \
@@ -145,7 +146,7 @@ class SDFace(object):
 		return "\nSDFace at %#x, (%s, %s, %s) \n## f[0] id: %#x, f[1] id: %#x, f[2] id: %#x \n"%\
 		(id(self), self.v[0], self.v[1], self.v[2], id(self.f[0]), id(self.f[1]), id(self.f[2]))
 
-	def vnum(vert:SDVertex) -> int:
+	def vnum(self, vert:SDVertex) -> int:
 		"""查是第几个顶点"""
 		for i in range(3):
 			v = self.v[i]
@@ -154,24 +155,37 @@ class SDFace(object):
 		print("########### 这个点不存在于 面中", vert, self)
 		return -1
 
-	def nextFace(vert:SDVertex):
+	def nextFace(self, vert:SDVertex):
 		return self.f[self.vnum(vert)]
 
-	def prevFace(vert:SDVertex):
+	def prevFace(self, vert:SDVertex):
 		return self.f[PREV(self.vnum(vert))]
 
-	def nextVert(vert:SDVertex):
+	def nextVert(self, vert:SDVertex):
 		return self.v[NEXT(self.vnum(vert))]
 
-	def prevVert(vert:SDVertex):
+	def prevVert(self, vert:SDVertex):
 		return self.v[PREV(self.vnum(vert))]
+
+	def otherVert(self, v0:SDVertex, v1:SDVertex):
+		for i in range(3):
+			if self.v[i] != v0 and self.v[i] != v1:
+				return self.v[i]
+		print('########### 面调用 otherVert 出错')
+
+	def getTriPos(self):
+		return [
+			[self.v[0].p.x, self.v[0].p.y, self.v[0].p.z],
+			[self.v[1].p.x, self.v[1].p.y, self.v[1].p.z],
+			[self.v[2].p.x, self.v[2].p.y, self.v[2].p.z],
+		]
 
 class SDEdge(object):
 	"""边结构"""
 	def __init__(self, v0:SDVertex, v1:SDVertex):
-		self.v = [None, None]
-		self.v[0] = min(v0, v1)
-		self.v[1] = max(v0, v1)
+		_v0 = min(v0, v1)
+		_v1 = max(v0, v1)
+		self.v = [_v0, _v1]
 		self.f = [None, None]
 		self.f0edgeNum = -1 # 这条边是三角形的 第几条边
 
@@ -198,3 +212,12 @@ def weightBoundary(vert:SDVertex, beta:float):
 	p += beta * result[0]
 	p += beta * result[-1]
 	return p 
+
+def beta(valence:int):
+	if valence == 3:
+		return 3.0 / 16.0
+	else:
+		return 3.0 / 8.0 * valence
+
+def loopGamma(valence:int):
+	return 1.0 / (valence + 3.0 / (8.0 * beta(valence)));

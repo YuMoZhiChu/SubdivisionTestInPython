@@ -9,7 +9,7 @@ PyramidPosList = [
 	[2.0, 0.0, 0.0],
 	[2.0, 2.0, 0.0],
 	[0.0, 2.0, 0.0],
-	[1.0, 1.0, 2.0]
+	[1.0, 1.0, 2.0],
 ]
 
 PyramidIndexList = [
@@ -19,6 +19,32 @@ PyramidIndexList = [
 	[4, 3, 0],
 	[0, 2, 1],
 	[0, 3, 2]
+]
+
+CubePosList = [
+	[0.0, 0.0, 0.0],
+	[2.0, 0.0, 0.0],
+	[2.0, 2.0, 0.0],
+	[0.0, 2.0, 0.0],
+	[0.0, 0.0, 2.0],
+	[2.0, 0.0, 2.0],
+	[2.0, 2.0, 2.0],
+	[0.0, 2.0, 2.0],
+]
+
+CubeIndexList = [
+	[0, 1, 2],
+	[0, 2, 3],
+	[5, 6, 2],
+	[5, 2, 1],
+	[6, 3, 2],
+	[6, 7, 3],
+	[7, 0, 3],
+	[7, 4, 0],
+	[4, 1, 0],
+	[4, 5, 1],
+	[4, 7, 6],
+	[4, 6, 5],
 ]
 
 # Pos and Index To TriList
@@ -36,28 +62,36 @@ def GetPyramidTriList():
 	global PyramidPosList, PyramidIndexList
 	return PosAndIndex2TriList(PyramidPosList, PyramidIndexList)
 
-def GetPyramidXYZRange():
+def GetCubeTriList():
+	global CubePosList, CubeIndexList
+	return PosAndIndex2TriList(CubePosList, CubeIndexList)
+
+def GetXYZRange():
 	return [
 	[-0.5, 2.5],
 	[-0.5, 2.5],
 	[-0.5, 2.5]
 	]
 
-def GetPyramidSubdivideParam():
-	global PyramidPosList, PyramidIndexList
-	indexList = []
-	for indexTuple in PyramidIndexList:
+def GetSubdivideParam(posList, indexList):
+	resultList = []
+	for indexTuple in indexList:
 		a, b, c = indexTuple
-		indexList.append(a)
-		indexList.append(b)
-		indexList.append(c)
-	return indexList, PyramidPosList
+		resultList.append(a)
+		resultList.append(b)
+		resultList.append(c)
+	return resultList, posList
 
 if __name__ == '__main__':
 	InitSystem()
-	LoopSubdivide(0, *GetPyramidSubdivideParam())
+	#result = LoopSubdivide(3, *GetSubdivideParam(PyramidPosList, PyramidIndexList))
+	#DrawTriList(result)
 	
-	DrawTriList(GetPyramidTriList())
-	Show(GetPyramidXYZRange())
+	result = LoopSubdivide(5, *GetSubdivideParam(CubePosList, CubeIndexList))
+	DrawTriList(result)
+
+	#DrawTriList(GetCubeTriList())
+	#DrawTriList(GetPyramidTriList())
+	Show(GetXYZRange())
 
 
